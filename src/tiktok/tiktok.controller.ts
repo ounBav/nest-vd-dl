@@ -26,7 +26,7 @@ export class TikTokController {
   }
 
   @Get('downloads')
-  @ApiQuery({ name: 'url', required: true, description: 'TikTok video URL' })
+  @ApiQuery({ name: 'username', required: true, description: 'TikTok video URL' })
   @ApiResponse({ status: 200, description: 'Video downloaded successfully' })
   @ApiResponse({
     status: 400,
