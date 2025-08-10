@@ -24,4 +24,24 @@ export class TikTokController {
       if (err) console.error(err);
     });
   }
+
+  @Get('downloads')
+  @ApiQuery({ name: 'url', required: true, description: 'TikTok video URL' })
+  @ApiResponse({ status: 200, description: 'Video downloaded successfully' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request: URL missing or invalid',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async downloads(@Query('username') username: string, @Res() res: Response) {
+    if (!username) return res.status(400).send({ error: 'URL is required' });
+
+    const filePaths =
+      await this.tiktokService.downloadNoWatermarkByUserName(username);
+    filePaths.map((filePath) => {
+      res.download(filePath, path.basename(filePath), (err) => {
+        if (err) console.error(err);
+      });
+    });
+  }
 }

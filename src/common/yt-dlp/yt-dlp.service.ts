@@ -65,71 +65,76 @@ export class YtDlpService {
   async downloadAllFromUser(username: string): Promise<string[]> {
     console.log(`Downloading videos for username: ${username}`);
 
-    return pTimeout(
-      new Promise<string[]>(async (resolve, reject) => {
-        const outputTemplate = path.join(
-          this.downloadsDir,
-          `${username}-%(id)s-${Date.now()}.%(ext)s`,
-        );
+    try {
+      const result = pTimeout(
+        new Promise<string[]>(async (resolve, reject) => {
+          const outputTemplate = path.join(
+            this.downloadsDir,
+            `${username}-%(id)s-${Date.now()}.%(ext)s`,
+          );
 
-        const ytDlpArgs = [
-          '--no-warnings',
-          '--output',
-          outputTemplate,
-          '--format',
-          'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-          `https://www.tiktok.com/${username}`,
-        ];
+          const ytDlpArgs = [
+            '--no-warnings',
+            '--output',
+            outputTemplate,
+            '--format',
+            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            `https://www.tiktok.com/${username}`,
+          ];
 
-        const process = spawn('yt-dlp', ytDlpArgs);
+          const process = spawn('yt-dlp', ytDlpArgs);
 
-        let stderr = '';
-        let stdout = '';
+          let stderr = '';
+          let stdout = '';
 
-        process.stdout.on('data', (data) => {
-          stdout += data.toString();
-        });
+          process.stdout.on('data', (data) => {
+            stdout += data.toString();
+          });
 
-        process.stderr.on('data', (data) => {
-          stderr += data.toString();
-        });
+          process.stderr.on('data', (data) => {
+            stderr += data.toString();
+          });
 
-        process.on('close', async (code) => {
-          if (code === 0) {
-            try {
-              // Read files in download directory
-              const files = await fsPromises.readdir(this.downloadsDir);
+          process.on('close', async (code) => {
+            if (code === 0) {
+              try {
+                // Read files in download directory
+                const files = await fsPromises.readdir(this.downloadsDir);
 
-              // Filter files by username prefix and .mp4 extension
-              const matchedFiles = files
-                .filter(
-                  (file) =>
-                    file.startsWith(`${username}-`) && file.endsWith('.mp4'),
-                )
-                .map((file) => path.join(this.downloadsDir, file));
+                // Filter files by username prefix and .mp4 extension
+                const matchedFiles = files
+                  .filter(
+                    (file) =>
+                      file.startsWith(`${username}-`) && file.endsWith('.mp4'),
+                  )
+                  .map((file) => path.join(this.downloadsDir, file));
 
-              resolve(matchedFiles);
-            } catch (err) {
+                resolve(matchedFiles);
+              } catch (err) {
+                reject(
+                  new InternalServerErrorException(
+                    'Failed to list downloaded files',
+                  ),
+                );
+              }
+            } else {
+              console.error('yt-dlp error:', stderr);
               reject(
                 new InternalServerErrorException(
-                  'Failed to list downloaded files',
+                  'Failed to download user videos',
                 ),
               );
             }
-          } else {
-            console.error('yt-dlp error:', stderr);
-            reject(
-              new InternalServerErrorException(
-                'Failed to download user videos',
-              ),
-            );
-          }
-        });
-      }),
-      10 * 60 * 1000, // 10 minutes timeout
-      () => {
-        throw new Error('Download timed out after 10 minutes');
-      },
-    );
+          });
+        }),
+        10 * 60 * 1000, // 10 minutes timeout
+        () => {
+          throw new Error('Download timed out after 10 minutes');
+        },
+      );
+      return result;
+    } catch (error) {
+      throw new BadRequestException('Unable to download videos');
+    }
   }
 }
