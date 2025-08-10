@@ -3,8 +3,8 @@
 
 .tiktok.com	TRUE	/	TRUE	1785912890	ttwid	1%7CBTh3X28yzNtv4o_07gUlKZWqf2DRuQAVFVSQ5NQbysQ%7C1754808890%7C167ee42503dc8086fd6033d37aa98b0820245abdc5c3d1e2df816109c5fed8be
 .tiktok.com	TRUE	/	TRUE	0	tt_csrf_token	bkH6mmGx-cOo99pgbWwChQqu_erX8sw1znhQ
-.tiktok.com	TRUE	/	TRUE	1770366903	tt_chain_token	BHFKaygeVy45ZGdj8RUOvQ==
-.tiktok.com	TRUE	/	TRUE	1755678903	msToken	lhQAfAWoSFyPEkyaIvEEbeY2f1RpkZsxnvknPg6aex3louvv5_d4ZQeqMlMx-P0KxgflikhEdMYqASqLzq63uFDbG6DF-_4BOG4=
+.tiktok.com	TRUE	/	TRUE	1770371723	tt_chain_token	BHFKaygeVy45ZGdj8RUOvQ==
+.tiktok.com	TRUE	/	TRUE	1755683723	msToken	cTjXZCfOojmlsnEsU0gC9qWK9Fm8TDleXhmo7N6UnmLS8u0QeW89k0ZBcrN-f486ScY6-PuCk6-1k-7VUaN9TOMm53iOWa5hdiQ=
 .youtube.com	TRUE	/	FALSE	0	PREF	hl=en&tz=UTC
 .youtube.com	TRUE	/	TRUE	0	SOCS	CAI
 .youtube.com	TRUE	/	TRUE	0	YSC	PA0jmt0McKg
