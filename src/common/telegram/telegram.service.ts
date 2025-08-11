@@ -24,11 +24,30 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     this.bot = new Telegraf(token);
 
     // Example: simple start command
-    this.bot.start((ctx) =>
+    this.bot.start((ctx) => {
       ctx.reply(
-        'Welcome! Send me a TikTok URL to download video without watermark.',
-      ),
-    );
+        `👋 Welcome, ${ctx.from.first_name || 'friend'}!
+    
+          I can help you download TikTok videos without a watermark.  
+          Just send me a valid TikTok video URL and I’ll process it for you.  
+
+          ℹ️ *Tip:* Make sure the link is public and accessible.`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: '📢 Share this bot',
+                  switch_inline_query: '', // Opens inline mode for sharing
+                },
+              ],
+            ],
+          },
+        },
+      );
+    });
+
     // Add other handlers here...
     // Listen to text messages that contain TikTok URLs
     this.bot.on('text', async (ctx) => {
