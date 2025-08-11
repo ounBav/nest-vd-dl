@@ -26,12 +26,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     // Example: simple start command
     this.bot.start((ctx) => {
       ctx.reply(
-        `👋 Welcome, ${ctx.from.first_name || 'friend'}!
-    
-          I can help you download TikTok videos without a watermark.  
-          Just send me a valid TikTok video URL and I’ll process it for you.  
-
-          ℹ️ *Tip:* Make sure the link is public and accessible.`,
+        `👋 Welcome, ${ctx.from.first_name || 'friend'}!\n\nI can help you download TikTok videos without a watermark.\nJust send me a valid TikTok video URL and I’ll process it for you.\n\nℹ️ *Tip:* Make sure the link is public and accessible.`,
         {
           parse_mode: 'Markdown',
           reply_markup: {
