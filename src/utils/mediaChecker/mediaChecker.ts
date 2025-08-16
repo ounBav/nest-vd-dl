@@ -8,6 +8,11 @@ const allowedDomains = [
   'instagram.com',
   'twitter.com',
   'facebook.com',
+  'bilibili.com',
+  'b23.tv', // Bilibili short links
+  'reddit.com',
+  'v.redd.it',
+  'redditmedia.com',
   // add more supported domains here
 ];
 
@@ -27,4 +32,3 @@ export function isAllowedMediaUrl(url: string): boolean {
     return false;
   }
 }
-
