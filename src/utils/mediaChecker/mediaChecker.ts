@@ -8,6 +8,8 @@ const allowedDomains = [
   'instagram.com',
   'twitter.com',
   'facebook.com',
+  'm.facebook.com',
+  'fb.watch',
   'bilibili.com',
   'b23.tv', // Bilibili short links
   'reddit.com',

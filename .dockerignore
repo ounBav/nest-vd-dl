@@ -1,6 +1,11 @@
 node_modules
+npm-debug.log*
+yarn-error.log*
+yarn-debug.log*
+.DS_Store
 dist
-.vscode
-.git
+/downloads
 .env
+.env.*
 *.log
+.coverage

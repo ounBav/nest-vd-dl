@@ -4,7 +4,7 @@ import { TikTokController } from './tiktok.controller';
 import { YtDlpModule } from 'src/common/yt-dlp/yt-dlp.module';
 
 @Module({
-  imports:[YtDlpModule],
+  imports: [YtDlpModule],
   controllers: [TikTokController],
   providers: [TikTokService],
 })

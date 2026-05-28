@@ -2,8 +2,10 @@ import { Controller, Get, Query, Res } from '@nestjs/common';
 import { TikTokService } from './tiktok.service';
 import { Response } from 'express';
 import * as path from 'path';
-import { ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { DownloadVideoDto, DownloadUsernameDto } from './ticktok.dto';
 
+@ApiTags('TikTok')
 @Controller('tiktok')
 export class TikTokController {
   constructor(private readonly tiktokService: TikTokService) {}
@@ -16,32 +18,52 @@ export class TikTokController {
     description: 'Bad request: URL missing or invalid',
   })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async download(@Query('url') url: string, @Res() res: Response) {
-    if (!url) return res.status(400).send({ error: 'URL is required' });
-
-    const filePath = await this.tiktokService.downloadNoWatermark(url);
+  async download(@Query() query: DownloadVideoDto, @Res() res: Response) {
+    const filePath = await this.tiktokService.downloadNoWatermark(query.url);
     res.download(filePath, path.basename(filePath), (err) => {
       if (err) console.error(err);
     });
   }
 
   @Get('downloads')
-  @ApiQuery({ name: 'username', required: true, description: 'TikTok video URL' })
-  @ApiResponse({ status: 200, description: 'Video downloaded successfully' })
+  @ApiQuery({
+    name: 'username',
+    required: true,
+    description: 'TikTok username or handle',
+  })
+  @ApiResponse({ status: 200, description: 'Videos downloaded successfully' })
   @ApiResponse({
     status: 400,
-    description: 'Bad request: URL missing or invalid',
+    description: 'Bad request: username missing or invalid',
   })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async downloads(@Query('username') username: string, @Res() res: Response) {
-    if (!username) return res.status(400).send({ error: 'URL is required' });
+  async downloads(@Query() query: DownloadUsernameDto, @Res() res: Response) {
+    const filePaths = await this.tiktokService.downloadNoWatermarkByUserName(
+      query.username,
+    );
 
-    const filePaths =
-      await this.tiktokService.downloadNoWatermarkByUserName(username);
-    filePaths.map((filePath) => {
+    for (const filePath of filePaths) {
       res.download(filePath, path.basename(filePath), (err) => {
         if (err) console.error(err);
       });
-    });
+    }
+  }
+
+  @Get('queue')
+  @ApiQuery({ name: 'username', required: true, description: 'TikTok username or handle' })
+  @ApiQuery({ name: 'delay', required: false, description: 'Delay between downloads in ms (default 5000)' })
+  @ApiResponse({ status: 202, description: 'Queue started' })
+  async queueDownloads(@Query() query: any, @Res() res: Response) {
+    const username = query.username;
+    const delay = query.delay ? Number(query.delay) : 5000;
+
+    // perform queued downloads sequentially and return result when finished
+    try {
+      const files = await this.tiktokService.downloadAllFromUserQueue(username, delay);
+      res.status(200).json({ files });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Failed to queue downloads' });
+    }
   }
 }
