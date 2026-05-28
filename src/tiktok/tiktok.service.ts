@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { YtDlpService } from 'src/common/yt-dlp/yt-dlp.service';
+import { YtDlpService } from '../common/yt-dlp/yt-dlp.service';
 
 @Injectable()
 export class TikTokService {

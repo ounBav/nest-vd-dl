@@ -5,7 +5,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { Telegraf } from 'telegraf';
-import { isAllowedMediaUrl } from 'src/utils/mediaChecker/mediaChecker';
+import { isAllowedMediaUrl } from '../../utils/mediaChecker/mediaChecker';
 import { QueueService } from '../queue/queue.service';
 
 @Injectable()

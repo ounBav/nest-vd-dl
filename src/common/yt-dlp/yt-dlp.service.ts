@@ -5,20 +5,16 @@ import {
   Logger,
 } from '@nestjs/common';
 import * as path from 'path';
-import { spawn } from 'child_process';
-import { isAllowedMediaUrl } from 'src/utils/mediaChecker/mediaChecker';
-import { promises as fsPromises } from 'fs';
+import * as ytdlp from 'yt-dlp-exec';
+import { existsSync, promises as fsPromises } from 'fs';
+import { isAllowedMediaUrl } from '../../utils/mediaChecker/mediaChecker';
 import { FileService } from '../file/file.service';
 
 @Injectable()
 export class YtDlpService {
   private readonly logger = new Logger(YtDlpService.name);
-  private readonly ytDlpPath: string;
 
   constructor(private readonly fileService: FileService) {
-    // Use local yt-dlp executable
-    this.ytDlpPath = path.join(process.cwd(), 'yt-dlp.exe');
-    this.logger.log(`YtDlp path: ${this.ytDlpPath}`);
     // ensure downloads dir exists (fire-and-forget)
     this.fileService.ensureDownloadsDir().catch((err) => {
       // eslint-disable-next-line no-console
@@ -37,38 +33,32 @@ export class YtDlpService {
     return new Promise((resolve, reject) => {
       const outputFile = path.join(downloadsDir, `${Date.now()}.mp4`);
 
-      const ytDlpArgs = [
-        '--no-warnings',
-        '--no-call-home',
-        '--quiet',
-        '--output',
-        outputFile,
-        '--no-check-certificate',
-        '--no-part',
-        '--format',
-        'mp4',
-        '--no-playlist',
-        '--no-overwrites',
-        '--trim-filenames',
-        '100',
-        '--force-overwrites',
-        '--remux-video',
-        'mp4',
-        '--no-warnings',
-        '--no-mtime',
-        '--cookies',
-        'cookies.txt', // optional if account cookies needed
-        '--',
-        url,
-      ];
+      const ytdlpFlags = {
+        noWarnings: true,
+        noCallHome: true,
+        quiet: true,
+        output: outputFile,
+        noCheckCertificate: true,
+        noPart: true,
+        format: 'mp4',
+        noPlaylist: true,
+        noOverwrites: true,
+        trimFilenames: 100,
+        forceOverwrites: true,
+        remuxVideo: 'mp4',
+        noMtime: true,
+        ...this.getCookieFlags(),
+      };
 
-      const proc = spawn('yt-dlp', ytDlpArgs);
+      const proc = ytdlp.exec(url, ytdlpFlags, { stdio: 'pipe' });
 
       let stderr = '';
 
-      proc.stderr.on('data', (data) => {
-        stderr += data.toString();
-      });
+      if (proc.stderr) {
+        proc.stderr.on('data', (data) => {
+          stderr += data.toString();
+        });
+      }
 
       proc.on('error', (error) => {
         this.logger.error('Failed to spawn yt-dlp process', error);
@@ -99,27 +89,31 @@ export class YtDlpService {
             `${clean}-%(id)s-${Date.now()}.%(ext)s`,
           );
 
-          const ytDlpArgs = [
-            '--no-warnings',
-            '--output',
-            outputTemplate,
-            '--format',
-            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-            `https://www.tiktok.com/@${clean}`,
-          ];
+          const ytdlpFlags = {
+            noWarnings: true,
+            output: outputTemplate,
+            format: 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            ...this.getCookieFlags(),
+          };
 
-          const proc = spawn(this.ytDlpPath, ytDlpArgs);
+          const proc = ytdlp.exec(`https://www.tiktok.com/@${clean}`, ytdlpFlags, {
+            stdio: 'pipe',
+          });
 
           let stderr = '';
           let stdout = '';
 
-          proc.stdout.on('data', (data) => {
-            stdout += data.toString();
-          });
+          if (proc.stdout) {
+            proc.stdout.on('data', (data) => {
+              stdout += data.toString();
+            });
+          }
 
-          proc.stderr.on('data', (data) => {
-            stderr += data.toString();
-          });
+          if (proc.stderr) {
+            proc.stderr.on('data', (data) => {
+              stderr += data.toString();
+            });
+          }
 
           proc.on('error', (error) => {
             this.logger.error('Failed to spawn yt-dlp process for user download', error);
@@ -174,19 +168,28 @@ export class YtDlpService {
     const url = `https://www.tiktok.com/@${clean}`;
 
     return new Promise<string[]>((resolve, reject) => {
-      const args = ['--no-warnings', '--flat-playlist', '--get-id', url];
-      const proc = spawn(this.ytDlpPath, args);
+      const ytdlpFlags = {
+        noWarnings: true,
+        flatPlaylist: true,
+        getId: true,
+        ...this.getCookieFlags(),
+      };
+      const proc = ytdlp.exec(url, ytdlpFlags, { stdio: 'pipe' });
 
       let stdout = '';
       let stderr = '';
 
-      proc.stdout.on('data', (data) => {
-        stdout += data.toString();
-      });
+      if (proc.stdout) {
+        proc.stdout.on('data', (data) => {
+          stdout += data.toString();
+        });
+      }
 
-      proc.stderr.on('data', (data) => {
-        stderr += data.toString();
-      });
+      if (proc.stderr) {
+        proc.stderr.on('data', (data) => {
+          stderr += data.toString();
+        });
+      }
 
       proc.on('error', (error) => {
         this.logger.error('Failed to spawn yt-dlp process for fetching ids', error);
@@ -247,5 +250,10 @@ export class YtDlpService {
     return Promise.race([promise, timeoutPromise]).finally(() =>
       clearTimeout(timeoutId),
     );
+  }
+
+  private getCookieFlags(): Record<string, string> {
+    const cookiesPath = path.join(process.cwd(), 'cookies.txt');
+    return existsSync(cookiesPath) ? { cookies: cookiesPath } : {};
   }
 }

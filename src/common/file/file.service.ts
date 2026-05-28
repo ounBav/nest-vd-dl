@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import * as os from 'os';
 import * as path from 'path';
 import { promises as fs } from 'fs';
 
@@ -8,8 +9,10 @@ export class FileService {
   private downloadsDir: string;
 
   constructor() {
-    this.downloadsDir =
-      process.env.DOWNLOADS_PATH || path.join(process.cwd(), 'downloads');
+    const downloadsBase =
+      process.env.DOWNLOADS_PATH ||
+      (process.env.VERCEL ? os.tmpdir() : process.cwd());
+    this.downloadsDir = path.join(downloadsBase, 'downloads');
   }
 
   async ensureDownloadsDir() {
