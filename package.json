@@ -40,7 +40,8 @@
     "winston": "^3.10.0",
     "nest-winston": "^1.9.0",
     "@nestjs/schedule": "^3.0.0",
-    "yt-dlp-exec": "file:./package"
+    "yt-dlp-exec": "file:./package",
+    "serverless-http": "^3.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

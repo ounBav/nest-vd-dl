@@ -4,7 +4,9 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import helmet from 'helmet';
-import * as compression from 'compression';
+/* Use CommonJS require for compression to ensure the runtime gets the function
+  directly (avoids interop issues when deployed to platforms like Vercel). */
+const compression = require('compression');
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
